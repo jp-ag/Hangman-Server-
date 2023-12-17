@@ -5,34 +5,33 @@ import java.io.*;
 
 public class GameHandler {
 
-    public Socket connectionSocket;
-    public HangmanInterface game;
+    private Socket connectionSocket;
+    private Integer lives = 5;
 
-    public GameHandler(Socket socket, HangmanInterface g){
+    public GameHandler(Socket socket){
         this.connectionSocket = socket;
-        this.game = g;
     }
     
     
     public void run() throws Exception {
+        HangmanInterface game = new HangmanInterface(lives);
         BufferedReader input = new BufferedReader(new InputStreamReader(this.connectionSocket.getInputStream()));
-        PrintWriter output = new PrintWriter(this.connectionSocket.getOutputStream());
+        PrintWriter output = new PrintWriter(this.connectionSocket.getOutputStream(), true);
         
+        System.out.println("Starting game");
         while(!game.isFinished()){
-            output.println("Input a letter");
+            output.println(game.printStatus() + " " + game.printLives()+ " Input a letter");
             String inputedString = input.readLine();
             System.out.println(inputedString);
-            break;
-            // checks if input is letter and of length one
-            //while (inputedString.length() > 1 && Character.isLetter(inputedString.charAt(0))){
-            //    output.println("Please input only one letter");
-            //    inputedString = input.readLine();
-            //}
+            // checks if input is not letter and of length one
+            while (inputedString.length() != 1 || !Character.isLetter(inputedString.charAt(0))){
+                output.println("Please input only one letter");
+                inputedString = input.readLine();
+            }
 
-            //output.println(game.guessLetter(inputedString));
-        
+            game.guessLetter(inputedString);
+        }
+        output.println("stop");
     }
-
-    }
-    
 }
+
